@@ -179,6 +179,10 @@
             box-shadow: 0 15px 50px rgba(255, 20, 147, 0.7);
         }
 
+        .music-player.playing {
+            animation: musicFloat 1s ease-in-out infinite, musicPulse 2s ease-in-out infinite;
+        }
+
         .music-player i {
             font-size: 2rem;
             color: white;
@@ -198,6 +202,11 @@
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             animation: waveExpand 2s ease-out infinite;
+            opacity: 0;
+        }
+
+        .music-player.playing .music-wave {
+            opacity: 1;
         }
 
         .music-wave:nth-child(2) {
@@ -224,66 +233,16 @@
             50% { transform: translateY(-10px); }
         }
 
-        /* Countdown Timer */
-        .countdown-section {
-            position: fixed;
-            top: 80px;
-            right: 30px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 1.5rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(255, 20, 147, 0.3);
-            z-index: 9999;
-            animation: slideInRight 1s ease-out;
-        }
-
-        .countdown-title {
-            font-family: 'Great Vibes', cursive;
-            font-size: 1.3rem;
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        .countdown-timer {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.8rem;
-        }
-
-        .countdown-item {
-            text-align: center;
-        }
-
-        .countdown-number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: block;
-            background: linear-gradient(135deg, #ffe4e1, #ffb6c1);
-            padding: 0.5rem;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.2);
-        }
-
-        .countdown-label {
-            font-size: 0.7rem;
-            color: #666;
-            margin-top: 0.3rem;
-            text-transform: uppercase;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
+        @keyframes musicPulse {
+            0%, 100% { 
+                box-shadow: 0 10px 40px rgba(255, 20, 147, 0.5);
             }
-            to {
-                transform: translateX(0);
-                opacity: 1;
+            50% { 
+                box-shadow: 0 15px 60px rgba(255, 20, 147, 0.8);
             }
         }
+
+
 
         /* Navigation */
         nav {
@@ -857,31 +816,8 @@
         .card-image {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 6rem;
-        }
-
-        .gallery-card-3d:nth-child(2) .card-image {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        .gallery-card-3d:nth-child(3) .card-image {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-
-        .gallery-card-3d:nth-child(4) .card-image {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        }
-
-        .gallery-card-3d:nth-child(5) .card-image {
-            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-        }
-
-        .gallery-card-3d:nth-child(6) .card-image {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            object-fit: cover;
+            display: block;
         }
 
         .card-overlay {
@@ -1546,6 +1482,17 @@
     <!-- Continuous Floating Hearts -->
     <div class="floating-hearts-continuous" id="floatingHeartsContainer"></div>
 
+    <!-- Background Music -->
+    <audio id="bgMusic" loop preload="auto">
+        <!-- Slow Romantic Piano Music -->
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_4d8b25d7c4.mp3" type="audio/mpeg">
+        <!-- Backup: Love Story Piano -->
+        <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3" type="audio/mpeg">
+        <!-- Backup: Romantic Guitar -->
+        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
     <!-- Music Player -->
     <div class="music-player" id="musicPlayer" title="Click to play/pause romantic music">
         <div class="music-waves">
@@ -1556,28 +1503,7 @@
         <i class="fas fa-music"></i>
     </div>
 
-    <!-- Countdown Timer -->
-    <div class="countdown-section">
-        <div class="countdown-title">Time Together</div>
-        <div class="countdown-timer">
-            <div class="countdown-item">
-                <span class="countdown-number" id="days">0</span>
-                <span class="countdown-label">Days</span>
-            </div>
-            <div class="countdown-item">
-                <span class="countdown-number" id="hours">0</span>
-                <span class="countdown-label">Hours</span>
-            </div>
-            <div class="countdown-item">
-                <span class="countdown-number" id="minutes">0</span>
-                <span class="countdown-label">Minutes</span>
-            </div>
-            <div class="countdown-item">
-                <span class="countdown-number" id="seconds">0</span>
-                <span class="countdown-label">Seconds</span>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Navigation -->
     <nav id="navbar">
@@ -1637,38 +1563,57 @@
             <div class="photo-slider">
                 <div class="slider-wrapper" id="sliderWrapper">
                     <div class="slide">
-                        <div class="slide-content">🌅</div>
+                        <div class="slide-content" style="background: none; padding: 0; display: block;">
+                            <img src="img1-sunset.png" alt="Romantic Sunset" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        </div>
                         <div class="slide-caption">
                             <h3>Sunset Dreams</h3>
                             <p>The day we watched the sun paint the sky with our love</p>
                         </div>
                     </div>
                     <div class="slide">
-                        <div class="slide-content">🎂</div>
+                        <div class="slide-content" style="background: none; padding: 0; display: block;">
+                            <img src="img2-sakura.png" alt="Cherry Blossoms" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        </div>
                         <div class="slide-caption">
-                            <h3>Celebrating Us</h3>
-                            <p>Every moment together is worth celebrating</p>
+                            <h3>Cherry Blossom Magic</h3>
+                            <p>Walking hand in hand under falling sakura petals</p>
                         </div>
                     </div>
                     <div class="slide">
-                        <div class="slide-content">🏖️</div>
+                        <div class="slide-content" style="background: none; padding: 0; display: block;">
+                            <img src="img3-starry.png" alt="Starry Night" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        </div>
+                        <div class="slide-caption">
+                            <h3>Starlit Promises</h3>
+                            <p>Under the stars, we promised forever</p>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="slide-content" style="background: none; padding: 0; display: block;">
+                            <img src="img4-cafe.png" alt="Cozy Cafe" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        </div>
+                        <div class="slide-caption">
+                            <h3>Cozy Coffee Dates</h3>
+                            <p>Every conversation with you is precious</p>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="slide-content" style="background: none; padding: 0; display: block;">
+                            <img src="img5-beach.png" alt="Beach Paradise" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                        </div>
                         <div class="slide-caption">
                             <h3>Beach Paradise</h3>
                             <p>Where the ocean met our endless love</p>
                         </div>
                     </div>
                     <div class="slide">
-                        <div class="slide-content">🌸</div>
-                        <div class="slide-caption">
-                            <h3>Spring Blossoms</h3>
-                            <p>Our love blooms eternally like spring flowers</p>
+                        <div class="slide-content" style="background: none; padding: 0; display: block;">
+                            <img src="img6-garden.png" alt="Garden Romance" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                         </div>
-                    </div>
-                    <div class="slide">
-                        <div class="slide-content">⭐</div>
                         <div class="slide-caption">
-                            <h3>Starlit Promises</h3>
-                            <p>Under the stars, we promised forever</p>
+                            <h3>Garden Romance</h3>
+                            <p>Every path we walk together leads to forever</p>
                         </div>
                     </div>
                 </div>
@@ -1698,60 +1643,60 @@
             <div class="gallery-grid-3d">
                 <div class="gallery-card-3d">
                     <div class="card-face">
-                        <div class="card-image">💑</div>
+                        <img src="img1-sunset.png" alt="Sunset" class="card-image" style="width: 100%; height: 100%; object-fit: cover;">
                         <div class="card-overlay">
-                            <h3>First Date Magic</h3>
-                            <p>Where everything began</p>
+                            <h3>Romantic Sunset</h3>
+                            <p>Where our love story began</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="gallery-card-3d">
                     <div class="card-face">
-                        <div class="card-image">🎭</div>
+                        <img src="img2-sakura.png" alt="Cherry Blossoms" class="card-image" style="width: 100%; height: 100%; object-fit: cover;">
                         <div class="card-overlay">
-                            <h3>Adventures Together</h3>
-                            <p>Creating unforgettable memories</p>
+                            <h3>Cherry Blossom Love</h3>
+                            <p>Spring brought us closer together</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="gallery-card-3d">
                     <div class="card-face">
-                        <div class="card-image">☕</div>
+                        <img src="img3-starry.png" alt="Starry Night" class="card-image" style="width: 100%; height: 100%; object-fit: cover;">
                         <div class="card-overlay">
-                            <h3>Cozy Mornings</h3>
-                            <p>Coffee and conversations</p>
+                            <h3>Under the Stars</h3>
+                            <p>Dreams we shared together</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="gallery-card-3d">
                     <div class="card-face">
-                        <div class="card-image">🎨</div>
+                        <img src="img4-cafe.png" alt="Cozy Cafe" class="card-image" style="width: 100%; height: 100%; object-fit: cover;">
                         <div class="card-overlay">
-                            <h3>Creative Souls</h3>
-                            <p>Painting our love story</p>
+                            <h3>Coffee & Conversations</h3>
+                            <p>Cozy moments that matter most</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="gallery-card-3d">
                     <div class="card-face">
-                        <div class="card-image">🌙</div>
+                        <img src="img5-beach.png" alt="Beach Paradise" class="card-image" style="width: 100%; height: 100%; object-fit: cover;">
                         <div class="card-overlay">
-                            <h3>Moonlit Walks</h3>
-                            <p>Hand in hand under the stars</p>
+                            <h3>Beach Memories</h3>
+                            <p>Sun, sand, and sweet love</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="gallery-card-3d">
                     <div class="card-face">
-                        <div class="card-image">🎁</div>
+                        <img src="img6-garden.png" alt="Garden Romance" class="card-image" style="width: 100%; height: 100%; object-fit: cover;">
                         <div class="card-overlay">
-                            <h3>Surprise Moments</h3>
-                            <p>Every day is a gift with you</p>
+                            <h3>Garden Path Romance</h3>
+                            <p>Walking together through life</p>
                         </div>
                     </div>
                 </div>
@@ -2015,26 +1960,6 @@
             }
         });
 
-        // ==================== COUNTDOWN TIMER ====================
-        function updateCountdown() {
-            // Set your special date here (year, month-1, day)
-            const specialDate = new Date('2023-02-14').getTime();
-            const now = new Date().getTime();
-            const timeSince = now - specialDate;
-
-            const days = Math.floor(timeSince / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeSince % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeSince % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeSince % (1000 * 60)) / 1000);
-
-            document.getElementById('days').textContent = days;
-            document.getElementById('hours').textContent = hours;
-            document.getElementById('minutes').textContent = minutes;
-            document.getElementById('seconds').textContent = seconds;
-        }
-
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
 
         // ==================== FLOATING HEARTS ====================
         function createFloatingHearts() {
@@ -2187,17 +2112,48 @@
         // ==================== MUSIC PLAYER ====================
         let isPlaying = false;
         const musicPlayer = document.getElementById('musicPlayer');
+        const bgMusic = document.getElementById('bgMusic');
+        
+        // Set volume to comfortable level (30%)
+        bgMusic.volume = 0.3;
 
         musicPlayer.addEventListener('click', () => {
             isPlaying = !isPlaying;
             const icon = musicPlayer.querySelector('i');
             
             if (isPlaying) {
+                bgMusic.play().catch(error => {
+                    console.log('Music play failed:', error);
+                    isPlaying = false;
+                });
                 icon.className = 'fas fa-pause';
-                musicPlayer.style.animation = 'musicFloat 1s ease-in-out infinite';
+                musicPlayer.classList.add('playing');
             } else {
+                bgMusic.pause();
                 icon.className = 'fas fa-music';
-                musicPlayer.style.animation = 'musicFloat 3s ease-in-out infinite';
+                musicPlayer.classList.remove('playing');
+            }
+        });
+
+        // Auto-play attempt (may be blocked by browser on mobile)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                bgMusic.play().then(() => {
+                    isPlaying = true;
+                    const icon = musicPlayer.querySelector('i');
+                    icon.className = 'fas fa-pause';
+                    musicPlayer.classList.add('playing');
+                }).catch(() => {
+                    // Autoplay blocked - user needs to click music button
+                    console.log('Click the music button to play romantic music! 🎵');
+                });
+            }, 1500);
+        });
+
+        // Keep playing when page becomes visible again (for mobile)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && isPlaying) {
+                bgMusic.play().catch(() => {});
             }
         });
 
