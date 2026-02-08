@@ -247,6 +247,11 @@
             }
         }
 
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateY(10px); }
+            10%, 90% { opacity: 1; transform: translateY(0); }
+        }
+
 
 
         /* Navigation */
@@ -254,7 +259,7 @@
             position: fixed;
             top: 0;
             width: 100%;
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             padding: 1.2rem 5%;
             box-shadow: 0 5px 30px rgba(255, 105, 180, 0.15);
@@ -264,7 +269,7 @@
 
         nav.scrolled {
             padding: 0.8rem 5%;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.98);
             box-shadow: 0 5px 40px rgba(255, 105, 180, 0.25);
         }
 
@@ -304,6 +309,7 @@
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
+            background: transparent;
         }
 
         .nav-links a::before {
@@ -316,6 +322,7 @@
             background: linear-gradient(135deg, #ff1493, #ff69b4);
             z-index: -1;
             transition: left 0.3s;
+            border-radius: 30px;
         }
 
         .nav-links a:hover {
@@ -1516,14 +1523,18 @@
     <div class="floating-hearts-continuous" id="floatingHeartsContainer"></div>
 
     <!-- Background Music - Slow Romantic Love Song -->
-    <audio id="bgMusic" loop preload="auto" crossorigin="anonymous">
-        <!-- Beautiful Slow Piano Love Song -->
-        <source src="https://assets.mixkit.co/music/preview/mixkit-piano-reflections-710.mp3" type="audio/mpeg">
-        <!-- Backup: Romantic Piano -->
-        <source src="https://assets.mixkit.co/music/preview/mixkit-a-very-happy-christmas-897.mp3" type="audio/mpeg">
-        <!-- Backup: Love Theme -->
-        <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_4d8b25d7c4.mp3" type="audio/mpeg">
+    <!-- IMPORTANT: Add your own romantic-music.mp3 file in the same folder! -->
+    <audio id="bgMusic" loop preload="auto">
+        <!-- Local music file (RECOMMENDED - Put romantic-music.mp3 in same folder) -->
+        <source src="romantic-music.mp3" type="audio/mpeg">
+        <!-- Online backup music (may not work due to CORS) -->
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
+
+    <!-- Music Loading Notice (will disappear after music loads) -->
+    <div id="musicNotice" style="position: fixed; bottom: 110px; right: 30px; background: rgba(255, 20, 147, 0.9); color: white; padding: 1rem 1.5rem; border-radius: 20px; z-index: 9999; font-size: 0.9rem; display: none; animation: fadeInOut 3s ease-in-out;">
+        🎵 Click anywhere to start music
+    </div>
 
     <!-- Music Player -->
     <div class="music-player" id="musicPlayer" title="Click to play/pause romantic music">
@@ -2141,88 +2152,104 @@
         // Auto slide
         setInterval(nextSlide, 5000);
 
-        // ==================== MUSIC PLAYER ====================
+        // ==================== MUSIC PLAYER - FIXED VERSION ====================
         let isPlaying = false;
         const musicPlayer = document.getElementById('musicPlayer');
         const bgMusic = document.getElementById('bgMusic');
+        const musicNotice = document.getElementById('musicNotice');
         
-        // Set volume to comfortable level (25% - soft background)
-        bgMusic.volume = 0.25;
+        // Set volume
+        bgMusic.volume = 0.3;
 
-        function toggleMusic() {
-            isPlaying = !isPlaying;
-            const icon = musicPlayer.querySelector('i');
-            
-            if (isPlaying) {
-                bgMusic.play().catch(error => {
-                    console.log('Music play failed:', error);
-                    isPlaying = false;
-                });
-                icon.className = 'fas fa-pause';
-                musicPlayer.classList.add('playing');
-            } else {
-                bgMusic.pause();
-                icon.className = 'fas fa-music';
-                musicPlayer.classList.remove('playing');
-            }
-        }
-
-        musicPlayer.addEventListener('click', toggleMusic);
-
-        // Better auto-play handling
-        function tryAutoPlay() {
-            // Try to play music
+        // Function to start music with fade in
+        function startMusic() {
+            bgMusic.volume = 0;
             bgMusic.play().then(() => {
                 isPlaying = true;
                 const icon = musicPlayer.querySelector('i');
                 icon.className = 'fas fa-pause';
                 musicPlayer.classList.add('playing');
-                console.log('🎵 Romantic music started!');
-            }).catch(() => {
-                // Auto-play blocked - enable on first user interaction
-                console.log('Click the music button or anywhere to start romantic music! 💕');
                 
-                // Auto-start on any user interaction
-                const startOnInteraction = () => {
-                    if (!isPlaying) {
-                        toggleMusic();
-                        // Remove listeners after first interaction
-                        document.removeEventListener('click', startOnInteraction);
-                        document.removeEventListener('touchstart', startOnInteraction);
-                        document.removeEventListener('keydown', startOnInteraction);
+                // Fade in
+                let vol = 0;
+                const fadeIn = setInterval(() => {
+                    if (vol < 0.3) {
+                        vol += 0.02;
+                        bgMusic.volume = Math.min(vol, 0.3);
+                    } else {
+                        clearInterval(fadeIn);
                     }
-                };
+                }, 50);
                 
-                document.addEventListener('click', startOnInteraction, { once: true });
-                document.addEventListener('touchstart', startOnInteraction, { once: true });
-                document.addEventListener('keydown', startOnInteraction, { once: true });
+                // Hide notice
+                if (musicNotice) musicNotice.style.display = 'none';
+                
+                console.log('🎵 Music started successfully!');
+            }).catch(err => {
+                console.log('Music blocked:', err);
+                // Show notice to click
+                if (musicNotice) {
+                    musicNotice.style.display = 'block';
+                    setTimeout(() => {
+                        if (musicNotice) musicNotice.style.display = 'none';
+                    }, 5000);
+                }
             });
         }
 
-        // Try auto-play after page loads
-        window.addEventListener('load', () => {
-            setTimeout(tryAutoPlay, 1000);
-        });
+        // Toggle function
+        function toggleMusic() {
+            if (!isPlaying) {
+                startMusic();
+            } else {
+                bgMusic.pause();
+                isPlaying = false;
+                musicPlayer.querySelector('i').className = 'fas fa-music';
+                musicPlayer.classList.remove('playing');
+            }
+        }
 
-        // Keep music playing when page becomes visible (mobile)
+        // Music player click
+        musicPlayer.addEventListener('click', toggleMusic);
+
+        // Auto-start music on ANY user interaction
+        let musicStarted = false;
+        
+        function autoStartMusic() {
+            if (!musicStarted) {
+                musicStarted = true;
+                startMusic();
+            }
+        }
+
+        // Try auto-play after preloader
+        setTimeout(() => {
+            startMusic();
+        }, 4500); // After preloader finishes
+
+        // Backup: Start on first click/touch anywhere
+        document.addEventListener('click', autoStartMusic, { once: true });
+        document.addEventListener('touchstart', autoStartMusic, { once: true });
+
+        // Keep playing when tab becomes visible
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && isPlaying) {
                 bgMusic.play().catch(() => {});
             }
         });
 
-        // Smooth fade in when starting
-        bgMusic.addEventListener('play', () => {
-            bgMusic.volume = 0;
-            let vol = 0;
-            const fadeIn = setInterval(() => {
-                if (vol < 0.25) {
-                    vol += 0.02;
-                    bgMusic.volume = Math.min(vol, 0.25);
-                } else {
-                    clearInterval(fadeIn);
-                }
-            }, 100);
+        // Handle music loading errors
+        bgMusic.addEventListener('error', (e) => {
+            console.log('Music file not found. Please add romantic-music.mp3 to the same folder!');
+            if (musicNotice) {
+                musicNotice.innerHTML = '⚠️ Add romantic-music.mp3 file';
+                musicNotice.style.display = 'block';
+            }
+        });
+
+        // Success handler
+        bgMusic.addEventListener('loadeddata', () => {
+            console.log('✅ Music loaded successfully!');
         });
 
         // ==================== QUIZ ====================
