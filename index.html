@@ -14,6 +14,11 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+
         :root {
             --primary: #ff1493;
             --secondary: #ff69b4;
@@ -414,6 +419,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        section > * {
+            width: 100%;
+            max-width: 1400px;
         }
 
         /* Hero Section */
@@ -613,6 +625,12 @@
         #carousel {
             background: linear-gradient(135deg, #0f0a0e, #1a0f1a);
             padding: 150px 5%;
+        }
+
+        .carousel-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .carousel-container {
@@ -1321,6 +1339,21 @@
             }
         }
 
+        @media (min-width: 1400px) {
+            /* Large screen optimizations */
+            section {
+                padding: 140px 8% 100px;
+            }
+            
+            .hero-title {
+                font-size: 8rem;
+            }
+            
+            .photo-slider {
+                max-width: 1200px;
+            }
+        }
+
         @media (max-width: 968px) {
             .countdown-section {
                 right: 10px;
@@ -1482,15 +1515,14 @@
     <!-- Continuous Floating Hearts -->
     <div class="floating-hearts-continuous" id="floatingHeartsContainer"></div>
 
-    <!-- Background Music -->
-    <audio id="bgMusic" loop preload="auto">
-        <!-- Slow Romantic Piano Music -->
+    <!-- Background Music - Slow Romantic Love Song -->
+    <audio id="bgMusic" loop preload="auto" crossorigin="anonymous">
+        <!-- Beautiful Slow Piano Love Song -->
+        <source src="https://assets.mixkit.co/music/preview/mixkit-piano-reflections-710.mp3" type="audio/mpeg">
+        <!-- Backup: Romantic Piano -->
+        <source src="https://assets.mixkit.co/music/preview/mixkit-a-very-happy-christmas-897.mp3" type="audio/mpeg">
+        <!-- Backup: Love Theme -->
         <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_4d8b25d7c4.mp3" type="audio/mpeg">
-        <!-- Backup: Love Story Piano -->
-        <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3" type="audio/mpeg">
-        <!-- Backup: Romantic Guitar -->
-        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
     </audio>
 
     <!-- Music Player -->
@@ -2114,10 +2146,10 @@
         const musicPlayer = document.getElementById('musicPlayer');
         const bgMusic = document.getElementById('bgMusic');
         
-        // Set volume to comfortable level (30%)
-        bgMusic.volume = 0.3;
+        // Set volume to comfortable level (25% - soft background)
+        bgMusic.volume = 0.25;
 
-        musicPlayer.addEventListener('click', () => {
+        function toggleMusic() {
             isPlaying = !isPlaying;
             const icon = musicPlayer.querySelector('i');
             
@@ -2133,28 +2165,64 @@
                 icon.className = 'fas fa-music';
                 musicPlayer.classList.remove('playing');
             }
-        });
+        }
 
-        // Auto-play attempt (may be blocked by browser on mobile)
+        musicPlayer.addEventListener('click', toggleMusic);
+
+        // Better auto-play handling
+        function tryAutoPlay() {
+            // Try to play music
+            bgMusic.play().then(() => {
+                isPlaying = true;
+                const icon = musicPlayer.querySelector('i');
+                icon.className = 'fas fa-pause';
+                musicPlayer.classList.add('playing');
+                console.log('🎵 Romantic music started!');
+            }).catch(() => {
+                // Auto-play blocked - enable on first user interaction
+                console.log('Click the music button or anywhere to start romantic music! 💕');
+                
+                // Auto-start on any user interaction
+                const startOnInteraction = () => {
+                    if (!isPlaying) {
+                        toggleMusic();
+                        // Remove listeners after first interaction
+                        document.removeEventListener('click', startOnInteraction);
+                        document.removeEventListener('touchstart', startOnInteraction);
+                        document.removeEventListener('keydown', startOnInteraction);
+                    }
+                };
+                
+                document.addEventListener('click', startOnInteraction, { once: true });
+                document.addEventListener('touchstart', startOnInteraction, { once: true });
+                document.addEventListener('keydown', startOnInteraction, { once: true });
+            });
+        }
+
+        // Try auto-play after page loads
         window.addEventListener('load', () => {
-            setTimeout(() => {
-                bgMusic.play().then(() => {
-                    isPlaying = true;
-                    const icon = musicPlayer.querySelector('i');
-                    icon.className = 'fas fa-pause';
-                    musicPlayer.classList.add('playing');
-                }).catch(() => {
-                    // Autoplay blocked - user needs to click music button
-                    console.log('Click the music button to play romantic music! 🎵');
-                });
-            }, 1500);
+            setTimeout(tryAutoPlay, 1000);
         });
 
-        // Keep playing when page becomes visible again (for mobile)
+        // Keep music playing when page becomes visible (mobile)
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && isPlaying) {
                 bgMusic.play().catch(() => {});
             }
+        });
+
+        // Smooth fade in when starting
+        bgMusic.addEventListener('play', () => {
+            bgMusic.volume = 0;
+            let vol = 0;
+            const fadeIn = setInterval(() => {
+                if (vol < 0.25) {
+                    vol += 0.02;
+                    bgMusic.volume = Math.min(vol, 0.25);
+                } else {
+                    clearInterval(fadeIn);
+                }
+            }, 100);
         });
 
         // ==================== QUIZ ====================
