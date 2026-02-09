@@ -1531,9 +1531,9 @@
         <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- Music Loading Notice (will disappear after music loads) -->
-    <div id="musicNotice" style="position: fixed; bottom: 110px; right: 30px; background: rgba(255, 20, 147, 0.9); color: white; padding: 1rem 1.5rem; border-radius: 20px; z-index: 9999; font-size: 0.9rem; display: none; animation: fadeInOut 3s ease-in-out;">
-        🎵 Click anywhere to start music
+    <!-- Music Notice -->
+    <div id="musicNotice" style="position: fixed; bottom: 120px; right: 30px; background: rgba(255, 20, 147, 0.95); color: white; padding: 1rem 1.8rem; border-radius: 25px; z-index: 9999; font-size: 0.95rem; display: none; box-shadow: 0 10px 40px rgba(255, 20, 147, 0.5); animation: bounceIn 0.5s ease-out;">
+        🎵 Click anywhere to start romantic music
     </div>
 
     <!-- Music Player -->
@@ -2152,25 +2152,24 @@
         // Auto slide
         setInterval(nextSlide, 5000);
 
-        // ==================== MUSIC PLAYER - FIXED VERSION ====================
+        // ==================== MUSIC PLAYER - FULL AUTO-PLAY ====================
         let isPlaying = false;
         const musicPlayer = document.getElementById('musicPlayer');
         const bgMusic = document.getElementById('bgMusic');
         const musicNotice = document.getElementById('musicNotice');
         
-        // Set volume
+        // Set comfortable volume
         bgMusic.volume = 0.3;
 
-        // Function to start music with fade in
+        // Start music function with smooth fade-in
         function startMusic() {
             bgMusic.volume = 0;
             bgMusic.play().then(() => {
                 isPlaying = true;
-                const icon = musicPlayer.querySelector('i');
-                icon.className = 'fas fa-pause';
+                musicPlayer.querySelector('i').className = 'fas fa-pause';
                 musicPlayer.classList.add('playing');
                 
-                // Fade in
+                // Smooth fade in
                 let vol = 0;
                 const fadeIn = setInterval(() => {
                     if (vol < 0.3) {
@@ -2181,13 +2180,10 @@
                     }
                 }, 50);
                 
-                // Hide notice
                 if (musicNotice) musicNotice.style.display = 'none';
-                
-                console.log('🎵 Music started successfully!');
+                console.log('🎵 Music playing! 💕');
             }).catch(err => {
-                console.log('Music blocked:', err);
-                // Show notice to click
+                console.log('Browser blocked auto-play. Click anywhere to start!');
                 if (musicNotice) {
                     musicNotice.style.display = 'block';
                     setTimeout(() => {
@@ -2197,7 +2193,7 @@
             });
         }
 
-        // Toggle function
+        // Toggle music
         function toggleMusic() {
             if (!isPlaying) {
                 startMusic();
@@ -2209,47 +2205,57 @@
             }
         }
 
-        // Music player click
         musicPlayer.addEventListener('click', toggleMusic);
 
-        // Auto-start music on ANY user interaction
-        let musicStarted = false;
+        // === AUTO-PLAY ATTEMPTS ===
         
-        function autoStartMusic() {
-            if (!musicStarted) {
-                musicStarted = true;
+        // 1. Try immediately after DOM loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(startMusic, 100);
+            });
+        } else {
+            setTimeout(startMusic, 100);
+        }
+
+        // 2. Try after full page load
+        window.addEventListener('load', () => {
+            setTimeout(startMusic, 300);
+        });
+
+        // 3. Backup: Start on ANY user interaction
+        let userInteracted = false;
+        function tryStartOnInteraction() {
+            if (!userInteracted && !isPlaying) {
+                userInteracted = true;
                 startMusic();
             }
         }
 
-        // Try auto-play after preloader
-        setTimeout(() => {
-            startMusic();
-        }, 4500); // After preloader finishes
+        // Listen to multiple interaction types
+        ['click', 'touchstart', 'keydown', 'scroll', 'mousemove'].forEach(eventType => {
+            document.addEventListener(eventType, tryStartOnInteraction, { once: true });
+        });
 
-        // Backup: Start on first click/touch anywhere
-        document.addEventListener('click', autoStartMusic, { once: true });
-        document.addEventListener('touchstart', autoStartMusic, { once: true });
-
-        // Keep playing when tab becomes visible
+        // Keep music playing when tab is visible
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && isPlaying) {
                 bgMusic.play().catch(() => {});
             }
         });
 
-        // Handle music loading errors
+        // Error handling
         bgMusic.addEventListener('error', (e) => {
-            console.log('Music file not found. Please add romantic-music.mp3 to the same folder!');
+            console.log('⚠️ Music file not found!');
+            console.log('Add romantic-music.mp3 to the same folder!');
             if (musicNotice) {
-                musicNotice.innerHTML = '⚠️ Add romantic-music.mp3 file';
+                musicNotice.innerHTML = '⚠️ Add romantic-music.mp3';
                 musicNotice.style.display = 'block';
             }
         });
 
-        // Success handler
         bgMusic.addEventListener('loadeddata', () => {
-            console.log('✅ Music loaded successfully!');
+            console.log('✅ Music loaded!');
         });
 
         // ==================== QUIZ ====================
